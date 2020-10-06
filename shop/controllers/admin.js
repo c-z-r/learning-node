@@ -1,4 +1,7 @@
+const mongoDB = require("mongodb");
 const Product = require("../models/product");
+
+const ObjectId = mongoDB.ObjectId;
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -14,9 +17,17 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
 
-  const product = new Product(null, title, imageUrl, description, price);
-  product.save();
-  res.redirect("/");
+  console.log("user id:", req.user._id);
+
+  new Product(title, imageUrl, description, price, null, req.user._id)
+    .save()
+    .then(result => {
+      console.log("Created Product");
+      res.redirect("/");
+    })
+    .catch(err => {
+      console.log(err);
+    });
 };
 
 exports.getEditProduct = (req, res, next) => {
@@ -26,7 +37,7 @@ exports.getEditProduct = (req, res, next) => {
   }
 
   const id = req.params.productId;
-  Product.findById(id, product => {
+  Product.findById(id).then(product => {
     if (!product) {
       res.redirect("/");
     }
@@ -46,31 +57,40 @@ exports.postEditProduct = (req, res, next) => {
   const updatedImageUrl = req.body.imageUrl;
   const updatedDescription = req.body.description;
   const updatedPrice = req.body.price;
+
   const product = new Product(
-    id,
     updatedTitle,
     updatedImageUrl,
     updatedDescription,
-    updatedPrice
+    updatedPrice,
+    new ObjectId(id)
   );
-  product.save();
-
-  res.redirect("/admin/products");
+  return product
+    .save()
+    .then(result => {
+      console.log("Updated product" + result._id);
+      res.redirect("/admin/products");
+    })
+    .catch(err => {
+      console.log(err);
+    });
 };
 
 exports.deleteProduct = (req, res, next) => {
   const id = req.body.productId;
-  Product.delete(id)
-  res.redirect("/admin/products");
+  Product.delete(id).then(res.redirect("/admin/products"));
 };
 
-
 exports.getProducts = (req, res) => {
-  Product.fetchAll(products => {
-    res.render("admin/products", {
-      prods: products,
-      pageTitle: "Admin Products",
-      path: "/admin/products"
+  Product.fetchAll()
+    .then(products => {
+      res.render("admin/products", {
+        prods: products,
+        pageTitle: "Admin Products",
+        path: "/admin/products"
+      });
+    })
+    .catch(err => {
+      console.log(err);
     });
-  });
 };
