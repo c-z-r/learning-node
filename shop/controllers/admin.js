@@ -93,8 +93,7 @@ exports.getProducts = (req, res) => {
       res.render("admin/products", {
         prods: products,
         pageTitle: "Admin Products",
-        path: "/admin/products",
-        isAuthenticated: req.session.isLoggedIn
+        path: "/admin/products"
       });
     })
     .catch(err => {
