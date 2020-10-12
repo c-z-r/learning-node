@@ -130,7 +130,13 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.deleteProduct = (req, res, next) => {
   const id = req.body.productId;
-  Product.findByIdAndRemove(id).then(res.redirect("/admin/products"));
+  Product.findByIdAndRemove(id)
+    .then(() => {
+      res.status(200).json({ message: "Deleted product!" });
+    })
+    .catch(err => {
+      res.status(200).json({ message: "Error while deleting product!" });
+    });
 };
 
 exports.getProducts = (req, res, next) => {

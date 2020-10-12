@@ -93,7 +93,6 @@ exports.getCheckout = (req, res) => {
 
 exports.getOrders = (req, res) => {
   Order.find({ "user.userId": req.user._id }).then(orders => {
-    console.log("userId " + orders);
     res.render("shop/orders", {
       pageTitle: "Your Orders",
       path: "/orders",
@@ -110,7 +109,7 @@ exports.postOrder = (req, res) => {
     .then(user => {
       const products = user.cart.items.map(i => {
         return {
-          qty: i.qty,
+          quantity: i.quantity,
           product: { ...i.productId._doc }
         };
       });
