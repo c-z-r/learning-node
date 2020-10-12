@@ -74,3 +74,54 @@ exports.getPost = (req, res, next) => {
       next(error);
     });
 };
+
+exports.editPost = (req, res, next) => {
+  const id = req.params.postId;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error("Validation failed!");
+    error.statusCode = 422;
+    throw error;
+  }
+
+  Post.findOneAndUpdate(
+    { _id: id },
+    {
+      title: req.body.title,
+      content: req.body.content
+    },
+    { new: true }
+  )
+    .then(result => {
+      if (!result) {
+        const error = new Error("Could not find post with id " + id);
+        error.statusCode = 404;
+        throw error;
+      }
+
+      res.status(200).json({
+        message: "Post updated!",
+        post: result
+      });
+    })
+    .catch(error => {
+      if (!error.statusCode) {
+        error.statusCode = 500;
+      }
+      next(error);
+    });
+};
+
+exports.deletePost = (req, res, next) => {
+  const id = req.params.postId;
+  Post.findOneAndDelete({ _id: id })
+    .then(result => {
+      res.status(200).json({message: "Post deleted!"});
+    })
+    .catch(error => {
+      if (!error.statusCode) {
+        error.statusCode = 500;
+      }
+      next(error);
+    });
+};
