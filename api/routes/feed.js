@@ -4,9 +4,11 @@ const router = express.Router();
 const { body } = require("express-validator");
 
 const feedController = require("../controllers/feed");
-router.get("/posts", feedController.getPosts);
+const isAuth = require("../middleware/is-auth");
+router.get("/posts", isAuth, feedController.getPosts);
 router.post(
   "/post",
+  isAuth,
   [
     body("title", "Please enter a valid title!")
       .trim()
@@ -20,8 +22,8 @@ router.post(
   feedController.createPost
 );
 
-router.get("/posts/:postId", feedController.getPost)
-router.put("/posts/:postId", feedController.editPost)
-router.delete("/posts/:postId", feedController.deletePost)
+router.get("/posts/:postId", isAuth, feedController.getPost);
+router.put("/posts/:postId", isAuth, feedController.editPost);
+router.delete("/posts/:postId", isAuth, feedController.deletePost);
 
 module.exports = router;

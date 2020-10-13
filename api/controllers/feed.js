@@ -116,7 +116,7 @@ exports.deletePost = (req, res, next) => {
   const id = req.params.postId;
   Post.findOneAndDelete({ _id: id })
     .then(result => {
-      res.status(200).json({message: "Post deleted!"});
+      res.status(200).json({ message: "Post deleted!" });
     })
     .catch(error => {
       if (!error.statusCode) {
