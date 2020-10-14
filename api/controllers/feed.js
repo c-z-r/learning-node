@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const Post = require("../models/post");
+const User = require("../models/user");
 
 exports.getPosts = (req, res, next) => {
   Post.find()
@@ -26,22 +27,30 @@ exports.createPost = (req, res, next) => {
   }
 
   const { title, content } = req.body;
+  let creator;
 
   const post = new Post({
     title: title,
     content: content,
     imageUrl: "/images/hack.png",
-    creator: {
-      name: "CZR"
-    }
+    creator: req.userId
   });
 
   post
     .save()
     .then(result => {
+      return User.findById(req.userId);
+    })
+    .then(user => {
+      creator = user;
+      user.posts.push(post);
+      return user.save();
+    })
+    .then(result => {
       res.status(201).json({
         message: "Post created!",
-        post: result
+        post: post,
+        creator: { _id: creator._id, name: creator.name }
       });
     })
     .catch(err => {
@@ -84,6 +93,7 @@ exports.editPost = (req, res, next) => {
     throw error;
   }
 
+  //switch to find post . then check then save()
   Post.findOneAndUpdate(
     { _id: id },
     {
@@ -98,6 +108,12 @@ exports.editPost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+
+      // if(result.creator.toString() !== req.userId){
+      //   const error = new Error("Not authorized");
+      //   error.statusCode = 403;
+      //   throw error;
+      // }
 
       res.status(200).json({
         message: "Post updated!",
@@ -115,6 +131,13 @@ exports.editPost = (req, res, next) => {
 exports.deletePost = (req, res, next) => {
   const id = req.params.postId;
   Post.findOneAndDelete({ _id: id })
+    .then(result => {
+      return User.findById(req.userId);
+    })
+    .then(user => {
+      user.posts.pull(id);
+      return user.save();
+    })
     .then(result => {
       res.status(200).json({ message: "Post deleted!" });
     })
