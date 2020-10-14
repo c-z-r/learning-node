@@ -10,6 +10,7 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 
 const feedRouter = require("./routes/feed");
 const authRouter = require("./routes/auth");
+const userRouter = require("./routes/user");
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -21,6 +22,7 @@ app.use((req, res, next) => {
 });
 app.use(feedRouter);
 app.use("/auth", authRouter);
+app.use("/users", userRouter);
 app.use((err, req, res, next) => {
   console.log(err);
   res.status(err.statusCode || 500).json({ message: err.message, data: err.data });
