@@ -1,52 +1,49 @@
 const User = require("../models/user");
 
-exports.getStatus = (req, res, next) => {
+exports.getStatus = async (req, res, next) => {
   const userId = req.params.userId;
-  User.findById(userId)
-    .then(user => {
-      if (!user) {
-        const err = new Error("User does not exist");
-        err.statusCode = 404;
-        throw err;
-      }
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("User does not exist");
+      err.statusCode = 404;
+      throw err;
+    }
 
-      res.status(200).json({
-        userId: user._id,
-        status: user.status
-      });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next();
+    res.status(200).json({
+      userId: user._id,
+      status: user.status
     });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next();
+  }
 };
 
-exports.updateStatus = (req, res, next) => {
+exports.updateStatus = async (req, res, next) => {
   const userId = req.userId;
   const newStatus = req.body.status;
-  User.findById(userId)
-    .then(user => {
-      if (!user) {
-        const err = new Error("User does not exist");
-        err.statusCode = 404;
-        throw err;
-      }
 
-      user.status = newStatus;
-      return user.save();
-    })
-    .then(user => {
-      res.status(200).json({
-        userId: user._id,
-        status: user.status
-      });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next();
+  try {
+    let user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("User does not exist");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    user.status = newStatus;
+    user = await user.save();
+    res.status(200).json({
+      userId: user._id,
+      status: user.status
     });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next();
+  }
 };
